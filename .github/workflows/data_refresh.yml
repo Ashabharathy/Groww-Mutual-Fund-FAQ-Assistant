@@ -1,0 +1,84 @@
+name: Daily Data Refresh
+
+# ── Triggers ──────────────────────────────────────────────────────────────────
+on:
+  schedule:
+    # 10:00 AM IST = 04:30 UTC  (IST is UTC+5:30)
+    - cron: "30 4 * * *"
+
+  # Allow manual trigger from the GitHub Actions UI
+  workflow_dispatch:
+
+# ── Permissions (needed for git push back to repo) ────────────────────────────
+permissions:
+  contents: write
+
+# ── Jobs ──────────────────────────────────────────────────────────────────────
+jobs:
+  refresh-data:
+    name: "Scrape → Chunk → Embed → Commit"
+    runs-on: ubuntu-latest
+    # Pipeline locally took ~200s; GitHub runners are slower.
+    # 45 min gives comfortable headroom for scraping + embedding.
+    timeout-minutes: 45
+
+    steps:
+      # 1. Checkout with write token so we can push the refreshed data back
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # 2. Set up Python 3.11
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: |
+            src/phase1_ingestion/requirements.txt
+            src/phase2_embedding/requirements.txt
+
+      # 3. Cache the HuggingFace embedding model BEFORE installing deps
+      #    so a warm cache avoids any network download during the pipeline run.
+      - name: Cache HuggingFace model (all-MiniLM-L6-v2)
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface/hub
+          key: hf-minilm-l6-v2-${{ runner.os }}-v1
+          restore-keys: |
+            hf-minilm-l6-v2-${{ runner.os }}-
+
+      # 4. Install all Python dependencies in one step (no duplicate playwright)
+      - name: Install Python dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r src/phase1_ingestion/requirements.txt
+          pip install -r src/phase2_embedding/requirements.txt
+          pip install schedule
+
+      # 5. Install Playwright's Chromium browser + OS-level dependencies
+      - name: Install Playwright Chromium
+        run: playwright install chromium --with-deps
+
+      # 6. Run the full pipeline: scrape → chunk → embed
+      - name: Run data refresh pipeline
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: python scheduler.py --run-once
+
+      # 7. Commit and push the refreshed data files back to the repo.
+      #    Uses `git diff --cached --quiet` to skip the commit when nothing changed.
+      - name: Commit refreshed data
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/corpus_chunks.json \
+                  data/phase1_cleaned/ \
+                  data/phase1_raw/ \
+                  data/phase2_vector_db/faiss_index.bin \
+                  data/phase2_vector_db/metadata.pkl
+          git diff --cached --quiet \
+            && echo "No data changes — skipping commit." \
+            || git commit -m "chore: auto data refresh $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push

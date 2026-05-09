@@ -1,0 +1,11 @@
+{
+    "scheme_name": "General Tata Mutual Fund Information",
+    "source_url": "https://www.tatamutualfund.com/investor-service/download-statement",
+    "chunks": [
+        "Scheme: General Info | How to download Account Statement or Capital Gains Statement for Tata Mutual Fund? You can download your account statement or capital gains report by visiting the official Tata Mutual Fund website (https://www.tatamutualfund.com), navigating to the 'Investor Services' section, and selecting 'Account Statement'. You will need to provide your Folio Number or PAN and verify with an OTP sent to your registered email/mobile. Alternatively, you can use the 'M-Invest' mobile app or the CAMS portal (https://www.camsonline.com) to request statements.",
+        "Scheme: General Info | What is the ELSS lock-in period? All Equity Linked Savings Schemes (ELSS), including Tata ELSS Fund, have a mandatory lock-in period of 3 years from the date of investment. During this period, you cannot redeem or switch your units.",
+        "Scheme: General Info | General Exit Load Information: Exit load is a fee charged by the AMC when an investor redeems or switches out of a mutual fund scheme before a specified period. The specific exit load for each Tata Mutual Fund scheme is mentioned in the Scheme Information Document (SID) and on the fund's page on Groww. For example, many equity funds have an exit load of 1% if redeemed within 1 year, but some like Tata Small Cap Fund have 0.5% if redeemed within 30 days.",
+        "Scheme: General Info | Riskometer Classification: Mutual fund schemes are classified into six risk levels on the Riskometer: Low, Low to Moderate, Moderate, Moderately High, High, and Very High. This helps investors understand the level of risk associated with the scheme's portfolio. For example, Tata Small Cap Fund is classified as 'Very High' risk.",
+        "Scheme: General Info | Benchmark Index: Every mutual fund scheme is benchmarked against a standard index to compare its performance. For instance, Tata Small Cap Fund is benchmarked against the NIFTY Smallcap 250 Total Return Index."
+    ]
+}
