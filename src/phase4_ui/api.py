@@ -10,6 +10,19 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 from src.phase3_rag.rag_logic import RAGEngine
 
 app = FastAPI(title="Mutual Fund FAQ Assistant API")
+# This is your "Guest List"
+origins = [
+    "https://groww-mf-saathi111-kyo7hpwjn-asha-s-projects3.vercel.app/", # Your Vercel URL
+    "http://localhost:5173", # This lets you test on your own computer
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"], # Allows all types of actions (Ask, Delete, etc.)
+    allow_headers=["*"], # Allows all types of data sent by your frontend
+)
 
 # Enable CORS
 app.add_middleware(
@@ -53,16 +66,3 @@ if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
 from fastapi.middleware.cors import CORSMiddleware
 
-# This is your "Guest List"
-origins = [
-    "https://groww-mf-saathi111-huvirxceh-asha-s-projects3.vercel.app", # Your Vercel URL
-    "http://localhost:5173", # This lets you test on your own computer
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"], # Allows all types of actions (Ask, Delete, etc.)
-    allow_headers=["*"], # Allows all types of data sent by your frontend
-)
