@@ -4,36 +4,23 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-# Add project root to path for imports
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-
-from src.phase3_rag.rag_logic import RAGEngine
-
+# 1. Start the app
 app = FastAPI(title="Mutual Fund FAQ Assistant API")
-# This is your "Guest List"
-origins = [
-    "https://groww-mf-saathi111-kyo7hpwjn-asha-s-projects3.vercel.app/", # Your Vercel URL
-    "http://localhost:5173", # This lets you test on your own computer
-]
 
+# 2. The Guest List (CORS) - MUST BE AT THE TOP
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"], # Allows all types of actions (Ask, Delete, etc.)
-    allow_headers=["*"], # Allows all types of data sent by your frontend
-)
-
-# Enable CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"], # For development
+    allow_origins=["*"],  # This allows your Vercel site to connect
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Initialize RAG Engine
+# 3. Path setup for your RAG engine
+sys.path.append(os.path.join(os.path.dirname(_file_), "..", ".."))
+from src.phase3_rag.rag_logic import RAGEngine
+
+# 4. Initialize Engine
 try:
     engine = RAGEngine()
 except Exception as e:
@@ -54,15 +41,14 @@ async def health_check():
 async def process_query(request: QueryRequest):
     if not engine:
         raise HTTPException(status_code=500, detail="RAG Engine not initialized.")
-    
     try:
         response_text = engine.process_query(request.query)
         return QueryResponse(answer=response_text)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-if __name__ == "__main__":
+# 5. Start command for Railway
+if _name_ == "_main_":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-from fastapi.middleware.cors import CORSMiddleware
-
+    port = int(os.environ.get("PORT", 8080))
+    uvicorn.run(app, host="0.0.0.0", port=port)
