@@ -10,7 +10,7 @@ app = FastAPI(title="Mutual Fund FAQ Assistant API")
 # 2. The Guest List (CORS) - MUST BE AT THE TOP
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # This allows your Vercel site to connect
+    allow_origins=["*"], # Allows local frontend and any origin in development
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

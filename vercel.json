@@ -1,6 +1,0 @@
-{
-  "buildCommand": "cd src/phase4_ui/frontend && npm run build",
-  "outputDirectory": "src/phase4_ui/frontend/dist",
-  "installCommand": "npm install",
-  "framework": "vite"
-}

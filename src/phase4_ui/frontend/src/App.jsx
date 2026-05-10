@@ -16,7 +16,9 @@ const SUGGESTIONS = [
 
 // Use environment variable for API base URL.
 // In development, fall back to the local backend.
-const API_BASE_URL = 'https://groww-mutual-fund-faq-assistant-production.up.railway.app';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (
+  import.meta.env.DEV ? 'http://localhost:8000/api' : ''
+);
 
 const INITIAL_MSG = {
   role: 'assistant',
