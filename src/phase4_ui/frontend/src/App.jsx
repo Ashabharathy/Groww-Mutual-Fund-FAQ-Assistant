@@ -14,8 +14,11 @@ const SUGGESTIONS = [
   "Minimum SIP for Tata Ethical Fund?",
 ];
 
-// Use environment variable for API base URL, fallback to localhost for development
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+// Use environment variable for API base URL.
+// In development, fall back to the local backend.
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (
+  import.meta.env.DEV ? 'http://localhost:8000/api' : ''
+);
 
 const INITIAL_MSG = {
   role: 'assistant',
@@ -82,13 +85,25 @@ export default function App() {
     setMessages((prev) => [...prev, { role: 'user', content: query }]);
     setInput('');
     setLoading(true);
-    try {
-      const res = await axios.post(`${API_BASE_URL}/query`, { query });
-      setMessages((prev) => [...prev, { role: 'assistant', content: res.data.answer }]);
-    } catch {
+
+    if (!API_BASE_URL) {
       setMessages((prev) => [...prev, {
         role: 'assistant',
-        content: "I'm sorry, I encountered an error connecting to the backend. Please ensure the FastAPI server is running.",
+        content: "The frontend is not configured with VITE_API_BASE_URL. Please set the backend URL in Vercel environment variables.",
+      }]);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      console.log('API_BASE_URL:', API_BASE_URL);
+      const res = await axios.post(`${API_BASE_URL}/query`, { query });
+      setMessages((prev) => [...prev, { role: 'assistant', content: res.data.answer }]);
+    } catch (err) {
+      console.error('Backend request failed:', err);
+      setMessages((prev) => [...prev, {
+        role: 'assistant',
+        content: "I'm sorry, I encountered an error connecting to the backend. Please ensure the FastAPI server is running and VITE_API_BASE_URL is correct.",
       }]);
     } finally {
       setLoading(false);
