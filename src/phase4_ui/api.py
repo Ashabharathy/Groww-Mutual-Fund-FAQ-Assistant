@@ -17,7 +17,7 @@ app.add_middleware(
 )
 
 # 3. Path setup for your RAG engine
-sys.path.append(os.path.join(os.path.dirname(_file_), "..", ".."))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 from src.phase3_rag.rag_logic import RAGEngine
 
 # 4. Initialize Engine
