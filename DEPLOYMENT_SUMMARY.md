@@ -101,7 +101,7 @@
 
 3. **Enable Networking**
    - Generate public domain
-   - Copy the URL (e.g., `https://groww-mf-backend-prod.up.railway.app`)
+   - Copy the URL (e.g., `https://groww-mutual-fund-faq-assistant-production.up.railway.app`)
 
 4. **Deploy & Verify**
    - Click Deploy
@@ -132,7 +132,7 @@
    - Output Directory: `dist`
 
 3. **Add Environment Variables**
-   - `VITE_API_BASE_URL`: `https://YOUR_RAILWAY_URL/api`
+   - `VITE_API_BASE_URL`: `https://groww-mutual-fund-faq-assistant-production.up.railway.app/api`
 
 4. **Deploy & Verify**
    - Click Deploy
@@ -184,7 +184,7 @@
 
 | Variable | Value | Source |
 |----------|-------|--------|
-| `VITE_API_BASE_URL` | `https://YOUR_RAILWAY_URL/api` | From Railway deployment |
+| `VITE_API_BASE_URL` | `https://groww-mutual-fund-faq-assistant-production.up.railway.app/api` | From Railway deployment |
 
 ### GitHub Actions (Data Pipeline)
 

@@ -10,7 +10,7 @@ This guide will walk you through deploying the Groww MF Saathi frontend on Verce
 
 1. **Vercel Account** - Sign up at https://vercel.com
 2. **GitHub Account** - Already have it ✅
-3. **Railway Backend URL** - From backend deployment (e.g., `https://groww-mf-backend-prod.up.railway.app`)
+3. **Railway Backend URL** - From backend deployment (e.g., `https://groww-mutual-fund-faq-assistant-production.up.railway.app`)
 
 ---
 
@@ -67,11 +67,11 @@ This guide will walk you through deploying the Groww MF Saathi frontend on Verce
 2. Click **"Add"** to add a new variable
 3. Set:
    - **Name:** `VITE_API_BASE_URL`
-   - **Value:** `https://YOUR_RAILWAY_URL/api`
+   - **Value:** `https://groww-mutual-fund-faq-assistant-production.up.railway.app/api`
    
    Replace `YOUR_RAILWAY_URL` with your actual Railway backend URL
    
-   Example: `https://groww-mf-backend-prod.up.railway.app/api`
+   Example: `https://groww-mutual-fund-faq-assistant-production.up.railway.app/api`
 
 ---
 
@@ -131,7 +131,7 @@ This guide will walk you through deploying the Groww MF Saathi frontend on Verce
 
 | Variable | Value | Notes |
 |----------|-------|-------|
-| `VITE_API_BASE_URL` | `https://YOUR_RAILWAY_URL/api` | Backend API endpoint |
+| `VITE_API_BASE_URL` | `https://groww-mutual-fund-faq-assistant-production.up.railway.app/api` | Backend API endpoint |
 
 ### Local Development
 
@@ -258,7 +258,7 @@ VITE_API_BASE_URL=http://localhost:8000/api
 ### Production (Vercel)
 
 ```
-VITE_API_BASE_URL=https://groww-mf-backend-prod.up.railway.app/api
+VITE_API_BASE_URL=https://groww-mutual-fund-faq-assistant-production.up.railway.app/api
 ```
 
 ---

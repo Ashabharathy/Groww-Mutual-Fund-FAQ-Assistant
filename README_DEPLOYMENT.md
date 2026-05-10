@@ -148,7 +148,7 @@ TRANSFORMERS_OFFLINE = 1
 ### Step 6: Enable Public Networking (1 min)
 ```
 Generate domain
-Copy URL (e.g., https://groww-mf-backend-prod.up.railway.app)
+Copy URL (e.g., https://groww-mutual-fund-faq-assistant-production.up.railway.app)
 ```
 
 ### Step 7: Deploy (10 min)
@@ -170,7 +170,7 @@ Test query: https://YOUR_URL/api/query?query=...
 
 ### Health Check
 ```bash
-curl https://YOUR_RAILWAY_URL/api/health
+curl https://groww-mutual-fund-faq-assistant-production.up.railway.app/api/health
 ```
 
 Expected response:
@@ -180,7 +180,7 @@ Expected response:
 
 ### Query Test
 ```bash
-curl -X POST https://YOUR_RAILWAY_URL/api/query \
+curl -X POST https://groww-mutual-fund-faq-assistant-production.up.railway.app/api/query \
   -H "Content-Type: application/json" \
   -d '{"query": "What is the expense ratio of Tata ELSS Fund?"}'
 ```

@@ -166,7 +166,7 @@ VITE_API_BASE_URL=http://localhost:8000/api
 **Set in Vercel Dashboard:**
 
 ```
-VITE_API_BASE_URL=https://groww-mf-backend-prod.up.railway.app/api
+VITE_API_BASE_URL=https://groww-mutual-fund-faq-assistant-production.up.railway.app/api
 ```
 
 Replace with your actual Railway backend URL.

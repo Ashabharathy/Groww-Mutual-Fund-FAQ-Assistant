@@ -91,7 +91,7 @@ python -m uvicorn src.phase4_ui.api:app --host 0.0.0.0 --port $PORT
 
 1. In Railway service settings, go to **Networking** tab
 2. Click **"Generate Domain"** or enable **Public Networking**
-3. Copy the generated URL (e.g., `https://groww-mf-backend-prod.up.railway.app`)
+3. Copy the generated URL (e.g., `https://groww-mutual-fund-faq-assistant-production.up.railway.app`)
 4. **Save this URL** - you'll need it for the frontend deployment
 
 ---
@@ -199,7 +199,7 @@ If there are errors:
 
 ### After Backend Deployment
 
-1. **Copy the Railway URL** (e.g., `https://groww-mf-backend-prod.up.railway.app`)
+1. **Copy the Railway URL** (e.g., `https://groww-mutual-fund-faq-assistant-production.up.railway.app`)
 2. **Deploy Frontend on Vercel** - Use this URL as `VITE_API_BASE_URL`
 3. **Test End-to-End** - Query from frontend should reach backend
 

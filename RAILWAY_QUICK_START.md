@@ -101,12 +101,12 @@ python -m uvicorn src.phase4_ui.api:app --host 0.0.0.0 --port $PORT
 
 1. Click **"Networking"** tab
 2. Click **"Generate Domain"** button
-3. Copy the generated URL (e.g., `https://groww-mf-backend-prod.up.railway.app`)
+3. Copy the generated URL (e.g., `https://groww-mutual-fund-faq-assistant-production.up.railway.app`)
 4. **Save this URL** - you'll need it for frontend
 
 **Example URL:**
 ```
-https://groww-mf-backend-prod.up.railway.app
+https://groww-mutual-fund-faq-assistant-production.up.railway.app
 ```
 
 ---
@@ -147,7 +147,7 @@ You should see:
 
 Open your browser and go to:
 ```
-https://YOUR_RAILWAY_URL/api/query?query=What%20is%20the%20expense%20ratio%20of%20Tata%20ELSS%20Fund?
+https://groww-mutual-fund-faq-assistant-production.up.railway.app/api/query?query=What%20is%20the%20expense%20ratio%20of%20Tata%20ELSS%20Fund?
 ```
 
 Or use curl:

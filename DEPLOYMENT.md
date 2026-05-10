@@ -119,7 +119,7 @@ PORT=8000
 
 1. Go to **Settings → Networking**
 2. Enable **Public Networking**
-3. Copy the generated URL (e.g., `https://groww-mf-backend-prod.up.railway.app`)
+3. Copy the generated URL (e.g., `https://groww-mutual-fund-faq-assistant-production.up.railway.app`)
 4. This URL will be used in the frontend `.env`
 
 ### Step 5: Deploy
@@ -129,7 +129,7 @@ PORT=8000
 3. Check logs for any errors
 4. Test the health endpoint:
    ```bash
-   curl https://groww-mf-backend-prod.up.railway.app/api/health
+   curl https://groww-mutual-fund-faq-assistant-production.up.railway.app/api/health
    ```
    Expected response:
    ```json
@@ -168,7 +168,7 @@ PORT=8000
 In Vercel dashboard, go to **Settings → Environment Variables** and add:
 
 ```
-VITE_API_BASE_URL=https://groww-mf-backend-prod.up.railway.app/api
+VITE_API_BASE_URL=https://groww-mutual-fund-faq-assistant-production.up.railway.app/api
 ```
 
 (Replace with your actual Railway backend URL)
@@ -203,7 +203,7 @@ VITE_API_BASE_URL=https://groww-mf-backend-prod.up.railway.app/api
 
 | Variable | Value | Notes |
 |---|---|---|
-| `VITE_API_BASE_URL` | `https://groww-mf-backend-prod.up.railway.app/api` | Backend API endpoint |
+| `VITE_API_BASE_URL` | `https://groww-mutual-fund-faq-assistant-production.up.railway.app/api` | Backend API endpoint |
 
 ### GitHub Actions (for data refresh pipeline)
 
@@ -219,10 +219,10 @@ VITE_API_BASE_URL=https://groww-mf-backend-prod.up.railway.app/api
 
 ```bash
 # Test health endpoint
-curl https://groww-mf-backend-prod.up.railway.app/api/health
+curl https://groww-mutual-fund-faq-assistant-production.up.railway.app/api/health
 
 # Test query endpoint
-curl -X POST https://groww-mf-backend-prod.up.railway.app/api/query \
+curl -X POST https://groww-mutual-fund-faq-assistant-production.up.railway.app/api/query \
   -H "Content-Type: application/json" \
   -d '{"query": "What is the expense ratio of Tata ELSS Fund?"}'
 ```
@@ -271,7 +271,7 @@ curl -X POST https://groww-mf-backend-prod.up.railway.app/api/query \
 ### Uptime Monitoring (Optional)
 
 Use a service like [UptimeRobot](https://uptimerobot.com) to monitor:
-- Backend health endpoint: `https://groww-mf-backend-prod.up.railway.app/api/health`
+- Backend health endpoint: `https://groww-mutual-fund-faq-assistant-production.up.railway.app/api/health`
 - Frontend URL: `https://groww-mf-saathi.vercel.app`
 
 ---

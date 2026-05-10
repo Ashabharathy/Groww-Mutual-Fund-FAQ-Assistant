@@ -122,7 +122,7 @@ TRANSFORMERS_OFFLINE = 1
 ```
 Go to Networking tab
 Click "Generate Domain"
-Copy the URL (e.g., https://groww-mf-backend-prod.up.railway.app)
+Copy the URL (e.g., https://groww-mutual-fund-faq-assistant-production.up.railway.app)
 ```
 
 ### Step 6: Deploy (10 min)
@@ -174,7 +174,7 @@ Frontend (Vercel) - Optional
 
 | Variable | Value | Source |
 |----------|-------|--------|
-| `VITE_API_BASE_URL` | `https://YOUR_RAILWAY_URL/api` | From Railway deployment |
+| `VITE_API_BASE_URL` | `https://groww-mutual-fund-faq-assistant-production.up.railway.app/api` | From Railway deployment |
 
 ---
 

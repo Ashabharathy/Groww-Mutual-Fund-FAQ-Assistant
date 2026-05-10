@@ -114,7 +114,7 @@ python -m uvicorn src.phase4_ui.api:app --host 0.0.0.0 --port $PORT
 
 1. Click **"Networking"** tab
 2. Click **"Generate Domain"** button
-3. Copy the generated URL (e.g., `https://groww-mf-backend-prod.up.railway.app`)
+3. Copy the generated URL (e.g., `https://groww-mutual-fund-faq-assistant-production.up.railway.app`)
 4. **Save this URL** - you'll need it for frontend deployment
 
 **Example:**
@@ -146,14 +146,14 @@ https://groww-mf-backend-prod.up.railway.app
 
 Open your browser and go to:
 ```
-https://YOUR_RAILWAY_URL/api/health
+https://groww-mutual-fund-faq-assistant-production.up.railway.app/api/health
 ```
 
 **Replace `YOUR_RAILWAY_URL` with your actual URL from Step 6**
 
 Example:
 ```
-https://groww-mf-backend-prod.up.railway.app/api/health
+https://groww-mutual-fund-faq-assistant-production.up.railway.app/api/health
 ```
 
 You should see:
@@ -165,7 +165,7 @@ You should see:
 
 Open your browser and go to:
 ```
-https://YOUR_RAILWAY_URL/api/query?query=What%20is%20the%20expense%20ratio%20of%20Tata%20ELSS%20Fund?
+https://groww-mutual-fund-faq-assistant-production.up.railway.app/api/query?query=What%20is%20the%20expense%20ratio%20of%20Tata%20ELSS%20Fund?
 ```
 
 You should see a response with the answer and source.
@@ -194,7 +194,7 @@ Once backend is deployed, you can deploy the frontend:
 5. Set **Root Directory** to `src/phase4_ui/frontend`
 6. Add environment variable:
    - **Key:** `VITE_API_BASE_URL`
-   - **Value:** `https://YOUR_RAILWAY_URL/api`
+   - **Value:** `https://groww-mutual-fund-faq-assistant-production.up.railway.app/api`
 7. Click **"Deploy"**
 
 ---

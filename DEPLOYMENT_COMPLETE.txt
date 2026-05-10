@@ -134,7 +134,7 @@ Step 5: Add Environment Variables (2 min)
 
 Step 6: Enable Public Networking (1 min)
   → Generate domain
-  → Copy URL (e.g., https://groww-mf-backend-prod.up.railway.app)
+  → Copy URL (e.g., https://groww-mutual-fund-faq-assistant-production.up.railway.app)
 
 Step 7: Deploy (10 min)
   → Click "Deploy"
@@ -150,12 +150,12 @@ Step 8: Verify (2 min)
 ================================================================================
 
 Health Check:
-  curl https://YOUR_RAILWAY_URL/api/health
+  curl https://groww-mutual-fund-faq-assistant-production.up.railway.app/api/health
   
   Expected: {"status":"healthy","engine_ready":true}
 
 Query Test:
-  curl -X POST https://YOUR_RAILWAY_URL/api/query \
+  curl -X POST https://groww-mutual-fund-faq-assistant-production.up.railway.app/api/query \
     -H "Content-Type: application/json" \
     -d '{"query": "What is the expense ratio of Tata ELSS Fund?"}'
   

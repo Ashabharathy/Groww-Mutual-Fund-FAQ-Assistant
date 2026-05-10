@@ -30,7 +30,7 @@ All frontend changes have been applied! Here's how to deploy in **10 minutes**.
 
 1. **Vercel Account** - Sign up at https://vercel.com
 2. **Railway Backend URL** - From backend deployment
-   - Example: `https://groww-mf-backend-prod.up.railway.app`
+   - Example: `https://groww-mutual-fund-faq-assistant-production.up.railway.app`
 3. **GitHub Account** - Already have it ✅
 
 ---
@@ -67,11 +67,11 @@ In the import dialog, set:
 2. Click **"Add"**
 3. Set:
    - **Name:** `VITE_API_BASE_URL`
-   - **Value:** `https://YOUR_RAILWAY_URL/api`
+   - **Value:** `https://groww-mutual-fund-faq-assistant-production.up.railway.app/api`
    
    Replace `YOUR_RAILWAY_URL` with your actual Railway backend URL
    
-   Example: `https://groww-mf-backend-prod.up.railway.app/api`
+   Example: `https://groww-mutual-fund-faq-assistant-production.up.railway.app/api`
 
 ### Step 5: Deploy (3 min)
 
@@ -109,7 +109,7 @@ After deployment:
 ### Production (Vercel)
 
 ```
-VITE_API_BASE_URL=https://YOUR_RAILWAY_URL/api
+VITE_API_BASE_URL=https://groww-mutual-fund-faq-assistant-production.up.railway.app/api
 ```
 
 Replace `YOUR_RAILWAY_URL` with your actual Railway backend URL.
