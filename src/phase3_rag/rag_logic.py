@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import httpx
+from functools import lru_cache
 from groq import Groq
 from dotenv import load_dotenv
 
@@ -12,7 +13,7 @@ from vector_store import VectorStore
 load_dotenv()
 
 class RAGEngine:
-    def __init__(self, groq_api_key=None, model_name="llama-3.3-70b-versatile"):
+    def __init__(self, groq_api_key=None, model_name=None):
         self.api_key = groq_api_key or os.getenv("GROQ_API_KEY")
         if not self.api_key:
             print("WARNING: GROQ_API_KEY not found. LLM calls will fail.")
@@ -21,7 +22,10 @@ class RAGEngine:
         # corporate network certificate issues
         http_client = httpx.Client(verify=False) if self.api_key else None
         self.client = Groq(api_key=self.api_key, http_client=http_client) if self.api_key else None
-        self.model_name = model_name
+
+        # Use a smaller, faster Groq model by default for interactive queries.
+        self.model_name = model_name or os.getenv("GROQ_MODEL_NAME", "llama-3.3-mini")
+        print(f"RAGEngine using Groq model: {self.model_name}")
         
         # Initialize Vector Store from Phase 2
         db_path = os.path.join("data", "phase2_vector_db")
@@ -138,7 +142,18 @@ class RAGEngine:
         # Return top 5 filtered chunks to provide sufficient context
         return filtered_docs[:5], filtered_metadatas[:5]
 
-    def process_query(self, query):
+    def _format_response(self, answer, context_metas):
+        no_info_phrases = ["i do not have factual information", "i don't know", "no relevant documents"]
+        if any(phrase in answer.lower() for phrase in no_info_phrases):
+            return answer
+
+        if context_metas:
+            top_meta = context_metas[0]
+            return f"{answer}\n\nSource: {top_meta['source_url']}\nLast updated from sources: {top_meta['last_updated_date']}"
+        return answer
+
+    @lru_cache(maxsize=256)
+    def _generate_answer(self, query):
         # 1. PII Check — hard guardrail, no LLM needed
         if self.is_pii_detected(query):
             return "Security Refusal: Your query contains personally identifiable information (PII). For security reasons, I cannot process queries containing PAN, Aadhaar, phone numbers, or email addresses."
@@ -155,8 +170,6 @@ class RAGEngine:
         context_docs, context_metas = self.get_context(query, scheme_filter=scheme_intent)
 
         # 4. LLM Generation — always called for every useful query
-        # If no context was found, pass an empty context and let the LLM respond
-        # gracefully rather than returning a hardcoded string.
         context_text = "\n---\n".join(context_docs) if context_docs else "No relevant documents found."
 
         system_prompt = f"""You are a strictly facts-only Mutual Fund FAQ Assistant for Tata Mutual Fund.
@@ -176,35 +189,20 @@ CONTEXT:
 {context_text}
 """
 
-        try:
-            completion = self.client.chat.completions.create(
-                model=self.model_name,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": query}
-                ],
-                temperature=0,
-                max_tokens=300
-            )
-            answer = completion.choices[0].message.content.strip()
+        completion = self.client.chat.completions.create(
+            model=self.model_name,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": query}
+            ],
+            temperature=0,
+            max_tokens=220
+        )
+        answer = completion.choices[0].message.content.strip()
+        return self._format_response(answer, context_metas)
 
-            # 5. Post-processing (Citation & Footer)
-            # Only skip the source link if the LLM explicitly says it doesn't know
-            no_info_phrases = ["i do not have factual information", "i don't know", "no relevant documents"]
-            if any(phrase in answer.lower() for phrase in no_info_phrases):
-                return answer
-
-            # Use metadata from the top chunk if available
-            if context_metas:
-                top_meta = context_metas[0]
-                response = f"{answer}\n\nSource: {top_meta['source_url']}\nLast updated from sources: {top_meta['last_updated_date']}"
-            else:
-                response = answer
-
-            return response
-
-        except Exception as e:
-            return f"Error during generation: {str(e)}"
+    def process_query(self, query):
+        return self._generate_answer(query.strip())
 
 if __name__ == "__main__":
     # Quick Test

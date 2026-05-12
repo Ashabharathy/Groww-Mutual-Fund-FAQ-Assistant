@@ -16,9 +16,11 @@ const SUGGESTIONS = [
 
 // Use environment variable for API base URL.
 // In development, fall back to the local backend.
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (
-  import.meta.env.DEV ? 'http://localhost:8000/api' : ''
-);
+const rawApiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+const trimmedApiBaseUrl = rawApiBaseUrl.replace(/\/+$/u, '');
+const API_BASE_URL = trimmedApiBaseUrl.endsWith('/api')
+  ? trimmedApiBaseUrl
+  : `${trimmedApiBaseUrl}/api`;
 
 const INITIAL_MSG = {
   role: 'assistant',
@@ -32,6 +34,95 @@ const MOCK_USER = {
   avatar: 'AB',
   plan: 'Pro Investor',
 };
+
+const parseContent = (content) => {
+  const lines = content.split('\n');
+  let answer = [], source = null, date = null;
+  lines.forEach((line) => {
+    if (line.startsWith('Source:'))                    source = line.replace('Source:', '').trim();
+    else if (line.startsWith('Last updated from sources:')) date = line.replace('Last updated from sources:', '').trim();
+    else if (line.trim())                              answer.push(line);
+  });
+  return { text: answer.join('\n'), source, date };
+};
+
+const ChatPanel = ({ messages, input, setInput, loading, onSend, onClear, label, chatEndRef, inputRef }) => (
+  <div className="chat-panel">
+    <div className="panel-header">
+      <div className="panel-title">
+        <MessageSquare size={13} />
+        {label}
+      </div>
+      <button className="icon-btn" onClick={onClear} title="Clear chat">
+        <Trash2 size={14} />
+      </button>
+    </div>
+
+    <div className="chat-window">
+      {messages.map((msg, idx) => {
+        const { text, source, date } =
+          msg.role === 'assistant'
+            ? parseContent(msg.content)
+            : { text: msg.content, source: null, date: null };
+        return (
+          <div key={idx} className={`message ${msg.role}`}>
+            <div className="msg-header">
+              <span className="icon-wrap">
+                {msg.role === 'assistant' ? <Bot size={12} /> : <User size={12} />}
+              </span>
+              {msg.role === 'assistant' ? 'Factual Assistant' : 'You'}
+            </div>
+            <div className="msg-content">{text}</div>
+            {source && (
+              <a href={source} target="_blank" rel="noopener noreferrer" className="source-link">
+                <ExternalLink size={11} /> View Source Document
+              </a>
+            )}
+            {date && (
+              <div className="footer-text">
+                <Calendar size={10} /> Verified on: {date}
+              </div>
+            )}
+          </div>
+        );
+      })}
+      {loading && (
+        <div className="message assistant loading">
+          <div className="msg-header">
+            <span className="icon-wrap"><Bot size={12} /></span>
+            Factual Assistant
+          </div>
+          <div className="typing-dots"><span /><span /><span /></div>
+        </div>
+      )}
+      <div ref={chatEndRef} />
+    </div>
+
+    <div className="suggestions">
+      {SUGGESTIONS.map((s, i) => (
+        <button key={i} className="suggestion-btn" onClick={() => onSend(s)} disabled={loading}>{s}</button>
+      ))}
+    </div>
+
+    <div className="input-area">
+      <div className="input-wrap">
+        <input
+          ref={inputRef}
+          type="text"
+          placeholder="Ask a factual question about Tata Mutual Funds..."
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && onSend()}
+          disabled={loading}
+          autoComplete="off"
+        />
+      </div>
+      <button className="send-btn" onClick={() => onSend()} disabled={loading || !input.trim()}>
+        <Send size={18} strokeWidth={2.5} />
+      </button>
+    </div>
+  </div>
+);
 
 export default function App() {
   // Theme
@@ -55,6 +146,8 @@ export default function App() {
   const [inputB, setInputB] = useState('');
   const [loadingB, setLoadingB] = useState(false);
   const chatEndB = useRef(null);
+  const inputRefA = useRef(null);
+  const inputRefB = useRef(null);
 
   useEffect(() => {
     chatEndA.current?.scrollIntoView({ behavior: 'smooth' });
@@ -64,21 +157,26 @@ export default function App() {
     chatEndB.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messagesB, loadingB]);
 
+  useEffect(() => {
+    const input = inputRefA.current;
+    if (input && document.activeElement === input) {
+      const length = input.value.length;
+      input.setSelectionRange(length, length);
+    }
+  }, [inputA]);
+
+  useEffect(() => {
+    const input = inputRefB.current;
+    if (input && document.activeElement === input) {
+      const length = input.value.length;
+      input.setSelectionRange(length, length);
+    }
+  }, [inputB]);
+
   // Apply theme to root
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
-
-  const parseContent = (content) => {
-    const lines = content.split('\n');
-    let answer = [], source = null, date = null;
-    lines.forEach((line) => {
-      if (line.startsWith('Source:'))                    source = line.replace('Source:', '').trim();
-      else if (line.startsWith('Last updated from sources:')) date = line.replace('Last updated from sources:', '').trim();
-      else if (line.trim())                              answer.push(line);
-    });
-    return { text: answer.join('\n'), source, date };
-  };
 
   const sendMessage = async (query, setMessages, setInput, setLoading) => {
     if (!query.trim()) return;
@@ -96,14 +194,15 @@ export default function App() {
     }
 
     try {
-      console.log('API_BASE_URL:', API_BASE_URL);
+      console.log('Resolved API_BASE_URL:', API_BASE_URL);
       const res = await axios.post(`${API_BASE_URL}/query`, { query });
       setMessages((prev) => [...prev, { role: 'assistant', content: res.data.answer }]);
     } catch (err) {
       console.error('Backend request failed:', err);
+      const errorDetail = err?.response?.data || err?.message || 'Unknown error';
       setMessages((prev) => [...prev, {
         role: 'assistant',
-        content: "I'm sorry, I encountered an error connecting to the backend. Please ensure the FastAPI server is running and VITE_API_BASE_URL is correct.",
+        content: `I'm sorry, I encountered an error connecting to the backend. Please ensure the FastAPI server is running and VITE_API_BASE_URL is correct.\n\nDebug: ${errorDetail}`,
       }]);
     } finally {
       setLoading(false);
@@ -117,88 +216,6 @@ export default function App() {
     if (which === 'A') setMessagesA([{ ...INITIAL_MSG }]);
     else               setMessagesB([{ ...INITIAL_MSG }]);
   };
-
-  // ── Chat panel component ──────────────────────────────────
-  const ChatPanel = ({ messages, input, setInput, loading, onSend, onClear, label, chatEndRef }) => (
-    <div className="chat-panel">
-      {/* Panel header */}
-      <div className="panel-header">
-        <div className="panel-title">
-          <MessageSquare size={13} />
-          {label}
-        </div>
-        <button className="icon-btn" onClick={onClear} title="Clear chat">
-          <Trash2 size={14} />
-        </button>
-      </div>
-
-      {/* Messages */}
-      <div className="chat-window">
-        {messages.map((msg, idx) => {
-          const { text, source, date } =
-            msg.role === 'assistant'
-              ? parseContent(msg.content)
-              : { text: msg.content, source: null, date: null };
-          return (
-            <div key={idx} className={`message ${msg.role}`}>
-              <div className="msg-header">
-                <span className="icon-wrap">
-                  {msg.role === 'assistant' ? <Bot size={12} /> : <User size={12} />}
-                </span>
-                {msg.role === 'assistant' ? 'Factual Assistant' : 'You'}
-              </div>
-              <div className="msg-content">{text}</div>
-              {source && (
-                <a href={source} target="_blank" rel="noopener noreferrer" className="source-link">
-                  <ExternalLink size={11} /> View Source Document
-                </a>
-              )}
-              {date && (
-                <div className="footer-text">
-                  <Calendar size={10} /> Verified on: {date}
-                </div>
-              )}
-            </div>
-          );
-        })}
-        {loading && (
-          <div className="message assistant loading">
-            <div className="msg-header">
-              <span className="icon-wrap"><Bot size={12} /></span>
-              Factual Assistant
-            </div>
-            <div className="typing-dots"><span /><span /><span /></div>
-          </div>
-        )}
-        <div ref={chatEndRef} />
-      </div>
-
-      {/* Suggestions */}
-      <div className="suggestions">
-        {SUGGESTIONS.map((s, i) => (
-          <button key={i} className="suggestion-btn" onClick={() => onSend(s)} disabled={loading}>{s}</button>
-        ))}
-      </div>
-
-      {/* Input */}
-      <div className="input-area">
-        <div className="input-wrap">
-          <input
-            type="text"
-            placeholder="Ask a factual question about Tata Mutual Funds..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && onSend()}
-            disabled={loading}
-            autoComplete="off"
-          />
-        </div>
-        <button className="send-btn" onClick={() => onSend()} disabled={loading || !input.trim()}>
-          <Send size={18} strokeWidth={2.5} />
-        </button>
-      </div>
-    </div>
-  );
 
   return (
     <div className={`page-root theme-${theme}`}>
@@ -351,6 +368,7 @@ export default function App() {
                 onClear={() => clearChat('A')}
                 label={dualMode ? 'Chat A' : 'Chat'}
                 chatEndRef={chatEndA}
+                inputRef={inputRefA}
               />
               {dualMode && (
                 <ChatPanel
@@ -362,6 +380,7 @@ export default function App() {
                   onClear={() => clearChat('B')}
                   label="Chat B"
                   chatEndRef={chatEndB}
+                  inputRef={inputRefB}
                 />
               )}
             </div>
