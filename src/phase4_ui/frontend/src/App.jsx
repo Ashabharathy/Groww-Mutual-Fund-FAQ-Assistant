@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import {
   Send, Bot, User, ShieldAlert, ExternalLink, Calendar,
@@ -27,6 +27,8 @@ const INITIAL_MSG = {
   content: 'Hello! I am your Tata Mutual Fund FAQ Assistant. I provide strictly factual information based on official documents. How can I help you today?',
 };
 
+const createInitialMessage = () => createMessage(INITIAL_MSG.role, INITIAL_MSG.content);
+
 // ── Mock user ──────────────────────────────────────────────
 const MOCK_USER = {
   name: 'Asha',
@@ -34,6 +36,12 @@ const MOCK_USER = {
   avatar: 'AB',
   plan: 'Pro Investor',
 };
+
+const createMessage = (role, content) => ({
+  id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+  role,
+  content,
+});
 
 const parseContent = (content) => {
   const lines = content.split('\n');
@@ -46,7 +54,13 @@ const parseContent = (content) => {
   return { text: answer.join('\n'), source, date };
 };
 
-const ChatPanel = ({ messages, input, setInput, loading, onSend, onClear, label, chatEndRef, inputRef }) => (
+const ChatPanel = React.memo(({ messages, input, setInput, loading, onSend, onClear, label, chatEndRef, inputRef }) => {
+  const parsedMessages = useMemo(() => messages.map((msg) => ({
+    ...msg,
+    parsed: msg.role === 'assistant' ? parseContent(msg.content) : { text: msg.content, source: null, date: null },
+  })), [messages]);
+
+  return (
   <div className="chat-panel">
     <div className="panel-header">
       <div className="panel-title">
@@ -59,13 +73,10 @@ const ChatPanel = ({ messages, input, setInput, loading, onSend, onClear, label,
     </div>
 
     <div className="chat-window">
-      {messages.map((msg, idx) => {
-        const { text, source, date } =
-          msg.role === 'assistant'
-            ? parseContent(msg.content)
-            : { text: msg.content, source: null, date: null };
+      {parsedMessages.map((msg) => {
+        const { text, source, date } = msg.parsed;
         return (
-          <div key={idx} className={`message ${msg.role}`}>
+          <div key={msg.id} className={`message ${msg.role}`}>
             <div className="msg-header">
               <span className="icon-wrap">
                 {msg.role === 'assistant' ? <Bot size={12} /> : <User size={12} />}
@@ -100,11 +111,11 @@ const ChatPanel = ({ messages, input, setInput, loading, onSend, onClear, label,
 
     <div className="suggestions">
       {SUGGESTIONS.map((s, i) => (
-        <button key={i} className="suggestion-btn" onClick={() => onSend(s)} disabled={loading}>{s}</button>
+        <button key={i} type="button" className="suggestion-btn" onClick={() => onSend(s)} disabled={loading}>{s}</button>
       ))}
     </div>
 
-    <div className="input-area">
+    <form className="input-area" onSubmit={(e) => { e.preventDefault(); onSend(); }}>
       <div className="input-wrap">
         <input
           ref={inputRef}
@@ -112,17 +123,17 @@ const ChatPanel = ({ messages, input, setInput, loading, onSend, onClear, label,
           placeholder="Ask a factual question about Tata Mutual Funds..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && onSend()}
           disabled={loading}
           autoComplete="off"
         />
       </div>
-      <button className="send-btn" onClick={() => onSend()} disabled={loading || !input.trim()}>
+      <button type="submit" className="send-btn" disabled={loading || !input.trim()}>
         <Send size={18} strokeWidth={2.5} />
       </button>
-    </div>
+    </form>
   </div>
-);
+  );
+});
 
 export default function App() {
   // Theme
@@ -136,13 +147,13 @@ export default function App() {
   const [dualMode, setDualMode] = useState(false);
 
   // Chat A
-  const [messagesA, setMessagesA] = useState([{ ...INITIAL_MSG }]);
+  const [messagesA, setMessagesA] = useState([createInitialMessage()]);
   const [inputA, setInputA] = useState('');
   const [loadingA, setLoadingA] = useState(false);
   const chatEndA = useRef(null);
 
   // Chat B (dual mode)
-  const [messagesB, setMessagesB] = useState([{ ...INITIAL_MSG }]);
+  const [messagesB, setMessagesB] = useState([createInitialMessage()]);
   const [inputB, setInputB] = useState('');
   const [loadingB, setLoadingB] = useState(false);
   const chatEndB = useRef(null);
@@ -157,38 +168,19 @@ export default function App() {
     chatEndB.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messagesB, loadingB]);
 
-  useEffect(() => {
-    const input = inputRefA.current;
-    if (input && document.activeElement === input) {
-      const length = input.value.length;
-      input.setSelectionRange(length, length);
-    }
-  }, [inputA]);
-
-  useEffect(() => {
-    const input = inputRefB.current;
-    if (input && document.activeElement === input) {
-      const length = input.value.length;
-      input.setSelectionRange(length, length);
-    }
-  }, [inputB]);
-
   // Apply theme to root
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  const sendMessage = async (query, setMessages, setInput, setLoading) => {
+  const sendMessage = useCallback(async (query, setMessages, setInput, setLoading) => {
     if (!query.trim()) return;
-    setMessages((prev) => [...prev, { role: 'user', content: query }]);
+    setMessages((prev) => [...prev, createMessage('user', query)]);
     setInput('');
     setLoading(true);
 
     if (!API_BASE_URL) {
-      setMessages((prev) => [...prev, {
-        role: 'assistant',
-        content: "The frontend is not configured with VITE_API_BASE_URL. Please set the backend URL in Vercel environment variables.",
-      }]);
+      setMessages((prev) => [...prev, createMessage('assistant', "The frontend is not configured with VITE_API_BASE_URL. Please set the backend URL in Vercel environment variables.")]);
       setLoading(false);
       return;
     }
@@ -196,26 +188,24 @@ export default function App() {
     try {
       console.log('Resolved API_BASE_URL:', API_BASE_URL);
       const res = await axios.post(`${API_BASE_URL}/query`, { query });
-      setMessages((prev) => [...prev, { role: 'assistant', content: res.data.answer }]);
+      setMessages((prev) => [...prev, createMessage('assistant', res.data.answer)]);
     } catch (err) {
       console.error('Backend request failed:', err);
       const errorDetail = err?.response?.data || err?.message || 'Unknown error';
-      setMessages((prev) => [...prev, {
-        role: 'assistant',
-        content: `I'm sorry, I encountered an error connecting to the backend. Please ensure the FastAPI server is running and VITE_API_BASE_URL is correct.\n\nDebug: ${errorDetail}`,
-      }]);
+      setMessages((prev) => [...prev, createMessage('assistant', `I'm sorry, I encountered an error connecting to the backend. Please ensure the FastAPI server is running and VITE_API_BASE_URL is correct.\n\nDebug: ${errorDetail}`)]);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleSendA = (text) => sendMessage(text || inputA, setMessagesA, setInputA, setLoadingA);
-  const handleSendB = (text) => sendMessage(text || inputB, setMessagesB, setInputB, setLoadingB);
+  const handleSendA = useCallback((text) => sendMessage(text || inputA, setMessagesA, setInputA, setLoadingA), [inputA, sendMessage]);
+  const handleSendB = useCallback((text) => sendMessage(text || inputB, setMessagesB, setInputB, setLoadingB), [inputB, sendMessage]);
 
-  const clearChat = (which) => {
-    if (which === 'A') setMessagesA([{ ...INITIAL_MSG }]);
-    else               setMessagesB([{ ...INITIAL_MSG }]);
-  };
+  const clearChat = useCallback((which) => {
+    const empty = [createMessage('assistant', INITIAL_MSG.content)];
+    if (which === 'A') setMessagesA(empty);
+    else               setMessagesB(empty);
+  }, []);
 
   return (
     <div className={`page-root theme-${theme}`}>
@@ -240,7 +230,7 @@ export default function App() {
                 </svg>
                 {sidebarOpen && <span className="sb-logo-text">Groww MF Saathi</span>}
               </div>
-              <button className="sb-collapse-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
+              <button type="button" className="sb-collapse-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
                 <ChevronRight size={15} style={{ transform: sidebarOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }} />
               </button>
             </div>
