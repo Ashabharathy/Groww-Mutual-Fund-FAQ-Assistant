@@ -24,7 +24,7 @@ class RAGEngine:
         self.client = Groq(api_key=self.api_key, http_client=http_client) if self.api_key else None
 
         # Use a smaller, faster Groq model by default for interactive queries.
-        self.model_name = model_name or os.getenv("GROQ_MODEL_NAME", "llama-3.3-mini")
+        self.model_name = model_name or os.getenv("GROQ_MODEL_NAME", "llama-3.1-8b-instant")
         print(f"RAGEngine using Groq model: {self.model_name}")
         
         # Initialize Vector Store from Phase 2
